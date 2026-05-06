@@ -1,31 +1,31 @@
-# Stage 1: Build
-FROM node:20-alpine AS builder
-
-# Set working directory
+# Etapa 1: Construcción
+FROM node:20-alpine AS build
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Copiar archivos de dependencias
 COPY package*.json ./
+
+# Instalar dependencias
 RUN npm ci
 
-# Copy the rest of the application
+# Copiar el resto del código
 COPY . .
 
-# Build the Angular application
+# Compilar la aplicación para producción
 RUN npm run build
 
-# Stage 2: Serve
+# Etapa 2: Servidor Web Nginx
 FROM nginx:alpine
 
-# Copy the Nginx configuration file
+# Copiar la configuración personalizada de Nginx si existe
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy the built Angular app to Nginx's web root
-# Note: Angular 17+ application builder outputs to dist/frontend/browser
-COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
+# Copiar los archivos compilados. Angular 17 genera la salida en 'dist/<project>/browser'
+# Si tu versión genera directamente en 'dist/frontend', ajusta la ruta a COPY --from=build /app/dist/frontend /usr/share/nginx/html
+COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
 
-# Expose port 80
+# Exponer el puerto
 EXPOSE 80
 
-# Start Nginx
+# Iniciar Nginx
 CMD ["nginx", "-g", "daemon off;"]

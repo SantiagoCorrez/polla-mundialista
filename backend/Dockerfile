@@ -1,55 +1,45 @@
-# Stage 1: Build
-FROM node:20-alpine AS builder
+# Etapa 1: Construcción
+FROM node:20-alpine AS build
+WORKDIR /app
 
-# Install OpenSSL required by Prisma on Alpine
-RUN apk update && apk add --no-cache openssl
+# Instalar dependencias necesarias para compilar Prisma en Alpine
+RUN apk add --no-cache openssl
 
-# Set working directory
-WORKDIR /usr/src/app
-
-# Copy package files and install dependencies
+# Copiar archivos de dependencias
 COPY package*.json ./
+COPY prisma ./prisma/
+
+# Instalar todas las dependencias (incluyendo devDependencies para compilar TypeScript)
 RUN npm ci
 
-# Copy Prisma schema and generate client
-COPY prisma ./prisma/
+# Generar cliente de Prisma
 RUN npx prisma generate
 
-# Copy remaining source code
+# Copiar el resto del código
 COPY . .
 
-# Build the TypeScript application
+# Compilar TypeScript
 RUN npm run build
 
-# Stage 2: Production
+# Etapa 2: Producción
 FROM node:20-alpine
+WORKDIR /app
 
-# Install OpenSSL required by Prisma on Alpine
-RUN apk update && apk add --no-cache openssl
+RUN apk add --no-cache openssl
 
-# Set working directory
-WORKDIR /usr/src/app
-
-# Set environment variable to production
-ENV NODE_ENV=production
-
-# Copy package files and install production dependencies only
+# Copiar archivos de dependencias para producción
 COPY package*.json ./
+COPY prisma ./prisma/
+
+# Instalar solo dependencias de producción
 RUN npm ci --omit=dev
 
-# Copy generated Prisma client
-COPY --from=builder /usr/src/app/node_modules/@prisma ./node_modules/@prisma
+# Copiar el cliente de Prisma generado y la compilación
+COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=build /app/dist ./dist
 
-# Copy built application
-COPY --from=builder /usr/src/app/dist ./dist
-
-# Create a non-root user for security
-RUN addgroup -S nodeapp && adduser -S nodeapp -G nodeapp \
-    && chown -R nodeapp:nodeapp /usr/src/app
-USER nodeapp
-
-# Expose the application port
+# Exponer el puerto
 EXPOSE 3000
 
-# Start the server
-CMD ["npm", "start"]
+# El script de inicio aplicará las migraciones y luego iniciará el servidor
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]
