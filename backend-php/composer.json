@@ -1,0 +1,22 @@
+{
+  "name": "polla-mundialista/backend",
+  "description": "Backend API for Polla Mundialista - World Cup Prediction App (PHP 8.5 + MySQL)",
+  "type": "project",
+  "require": {
+    "php": ">=8.2",
+    "firebase/php-jwt": "^6.10",
+    "phpoffice/phpspreadsheet": "^2.0",
+    "tecnickcom/tcpdf": "^6.7",
+    "vlucas/phpdotenv": "^5.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  },
+  "scripts": {
+    "start": "php -S localhost:8000 -t public",
+    "db:create": "php database/create.php",
+    "db:seed": "php database/seed.php"
+  }
+}

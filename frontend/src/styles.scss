@@ -1,0 +1,267 @@
+@use '@angular/material' as mat;
+
+// === CUSTOM DARK THEME ===
+$polla-primary: mat.define-palette(mat.$green-palette, 900, 800, 700);
+$polla-accent: mat.define-palette(mat.$amber-palette, A200, A100, A400);
+$polla-warn: mat.define-palette(mat.$red-palette);
+
+$polla-theme: mat.define-dark-theme((
+  color: (
+    primary: $polla-primary,
+    accent: $polla-accent,
+    warn: $polla-warn,
+  ),
+  typography: mat.define-typography-config(
+    $font-family: 'Inter, Roboto, "Helvetica Neue", sans-serif',
+  ),
+  density: -1,
+));
+
+@include mat.core();
+@include mat.all-component-themes($polla-theme);
+
+// === GOOGLE FONTS ===
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap');
+
+// === CSS VARIABLES ===
+:root {
+  --bg-primary: #0a0f1a;
+  --bg-secondary: #111827;
+  --bg-card: #1a2332;
+  --bg-card-hover: #1f2b3d;
+  --bg-surface: #243044;
+  --border-color: #2d3a4e;
+  --border-glow: rgba(255, 215, 0, 0.3);
+
+  --green-primary: #1a472a;
+  --green-light: #2d6b3f;
+  --green-dark: #0d2818;
+  --green-glow: rgba(45, 107, 63, 0.4);
+
+  --gold: #ffd700;
+  --gold-light: #ffe44d;
+  --gold-dark: #c5a600;
+  --gold-glow: rgba(255, 215, 0, 0.25);
+
+  --text-primary: #f0f4f8;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+
+  --gradient-main: linear-gradient(135deg, #1a472a 0%, #0d2818 50%, #0a1628 100%);
+  --gradient-gold: linear-gradient(135deg, #ffd700, #f59e0b);
+  --gradient-card: linear-gradient(145deg, #1a2332, #111827);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5);
+  --shadow-gold: 0 4px 20px rgba(255, 215, 0, 0.15);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// === GLOBAL RESET ===
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'Roboto', 'Helvetica Neue', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// === SCROLLBAR ===
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb {
+  background: var(--bg-surface);
+  border-radius: 4px;
+  &:hover { background: var(--green-light); }
+}
+
+// === MATERIAL OVERRIDES ===
+.mat-mdc-snack-bar-container {
+  &.snack-success .mdc-snackbar__surface { background: var(--green-primary) !important; }
+  &.snack-error .mdc-snackbar__surface { background: var(--danger) !important; }
+  &.snack-info .mdc-snackbar__surface { background: var(--info) !important; }
+}
+
+.mat-mdc-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-lg) !important;
+}
+
+.mat-mdc-tab-group {
+  .mat-mdc-tab-header {
+    border-bottom: 1px solid var(--border-color);
+  }
+}
+
+// === UTILITY CLASSES ===
+.page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page-title {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 24px;
+}
+
+.card-glass {
+  background: var(--gradient-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  backdrop-filter: blur(10px);
+  transition: var(--transition);
+
+  &:hover {
+    border-color: var(--border-glow);
+    box-shadow: var(--shadow-gold);
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &.badge-gold {
+    background: rgba(255, 215, 0, 0.15);
+    color: var(--gold);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+  }
+
+  &.badge-green {
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+  }
+
+  &.badge-red {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+
+  &.badge-blue {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--info);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+  }
+}
+
+.btn-gold {
+  background: var(--gradient-gold) !important;
+  color: #000 !important;
+  font-weight: 600 !important;
+  border: none !important;
+  transition: var(--transition);
+
+  &:hover {
+    box-shadow: var(--shadow-gold);
+    transform: translateY(-1px);
+  }
+}
+
+.btn-outline-gold {
+  border: 1px solid var(--gold) !important;
+  color: var(--gold) !important;
+  background: transparent !important;
+
+  &:hover {
+    background: rgba(255, 215, 0, 0.1) !important;
+  }
+}
+
+// === SKELETON LOADER ===
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-surface) 50%, var(--bg-card) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// === ANIMATIONS ===
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+// === RESPONSIVE ===
+@media (max-width: 768px) {
+  .page-container { padding: 16px; }
+  .page-title { font-size: 1.5rem; }
+}

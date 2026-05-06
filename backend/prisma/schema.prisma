@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String         @id @default(uuid())
+  fullName     String
+  username     String         @unique
+  email        String         @unique
+  passwordHash String
+  role         Role           @default(USER)
+  isActive     Boolean        @default(true)
+  predictions  Prediction[]
+  tokens       RefreshToken[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  tournamentPrediction TournamentPrediction?
+}
+
+model Team {
+  id          String  @id @default(uuid())
+  name        String
+  flagUrl     String?
+  countryCode String  @unique
+  group       String
+  homeMatches          Match[]                @relation("HomeTeam")
+  awayMatches          Match[]                @relation("AwayTeam")
+  champions            TournamentPrediction[] @relation("Champion")
+  runnerUps            TournamentPrediction[] @relation("RunnerUp")
+  thirdPlaces          TournamentPrediction[] @relation("ThirdPlace")
+  fourthPlaces         TournamentPrediction[] @relation("FourthPlace")
+}
+
+model Match {
+  id              String      @id @default(uuid())
+  homeTeamId      String
+  awayTeamId      String
+  homeTeam        Team        @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam        Team        @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  phase           Phase
+  group           String?
+  matchDate       DateTime
+  stadium         String?
+  status          MatchStatus @default(SCHEDULED)
+  homeScore       Int?
+  awayScore       Int?
+  homeScoreFinal  Int?
+  awayScoreFinal  Int?
+  qualifiedTeamId String?
+  predictions     Prediction[]
+  createdAt       DateTime    @default(now())
+}
+
+model Prediction {
+  id            String     @id @default(uuid())
+  userId        String
+  matchId       String
+  user          User       @relation(fields: [userId], references: [id])
+  match         Match      @relation(fields: [matchId], references: [id])
+  predictedHome Int
+  predictedAway Int
+  points        Int?
+  pointType     PointType?
+  createdAt     DateTime   @default(now())
+
+  @@unique([userId, matchId])
+}
+
+model TournamentPrediction {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id])
+  championId    String?
+  runnerUpId    String?
+  thirdPlaceId  String?
+  fourthPlaceId String?
+  topScorer     String?
+  champion      Team?    @relation("Champion", fields: [championId], references: [id])
+  runnerUp      Team?    @relation("RunnerUp", fields: [runnerUpId], references: [id])
+  thirdPlace    Team?    @relation("ThirdPlace", fields: [thirdPlaceId], references: [id])
+  fourthPlace   Team?    @relation("FourthPlace", fields: [fourthPlaceId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Phase {
+  GROUP_STAGE
+  ROUND_OF_32
+  ROUND_OF_16
+  QUARTER
+  SEMI
+  THIRD
+  FINAL
+}
+
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  FINISHED
+}
+
+enum PointType {
+  EXACT
+  WINNER_DIFF
+  WINNER
+  NONE
+}
