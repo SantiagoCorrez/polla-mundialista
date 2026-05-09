@@ -100,7 +100,11 @@ import { AuthService } from '../auth/services/auth.service';
 
               <!-- Prediction Form -->
               <div class="prediction-section" *ngIf="match.status === 'SCHEDULED'">
-                <div class="pred-form" *ngIf="!getPrediction(match.id)">
+                <div *ngIf="isMatchLocked(match.matchDate)" class="badge badge-red" style="margin-bottom: 12px; display: inline-block;">
+                  🔒 Bloqueado: Falta menos de 3 horas
+                </div>
+
+                <div class="pred-form" *ngIf="!getPrediction(match.id) && !isMatchLocked(match.matchDate)">
                   <span class="pred-label">Tu predicción:</span>
                   <div class="pred-inputs">
                     <input type="number" min="0" max="20" [(ngModel)]="predInputs[match.id + '_home']"
@@ -118,7 +122,7 @@ import { AuthService } from '../auth/services/auth.service';
                   <span class="pred-label">✅ Tu predicción:</span>
                   <div class="pred-result">
                     <span class="pred-score">{{ pred.predictedHome }} - {{ pred.predictedAway }}</span>
-                    <button mat-icon-button (click)="enableEdit(match.id, pred)" class="edit-btn">
+                    <button *ngIf="!isMatchLocked(match.matchDate)" mat-icon-button (click)="enableEdit(match.id, pred)" class="edit-btn">
                       <mat-icon>edit</mat-icon>
                     </button>
                   </div>
@@ -468,6 +472,11 @@ export class MatchesComponent implements OnInit {
 
   getPrediction(matchId: string): Prediction | undefined {
     return this.predictions().find(p => p.matchId === matchId);
+  }
+
+  isMatchLocked(matchDate: string | Date): boolean {
+    const cutoff = new Date(new Date(matchDate).getTime() - 3 * 60 * 60 * 1000);
+    return new Date() >= cutoff;
   }
 
   submitPrediction(matchId: string) {

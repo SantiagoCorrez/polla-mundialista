@@ -13,8 +13,9 @@ export class PredictionsService {
       throw new AppError('Cannot predict on a match that has already started or finished', 400);
     }
 
-    if (new Date() >= match.matchDate) {
-      throw new AppError('Cannot predict after the match start time', 400);
+    const cutoffTime = new Date(match.matchDate.getTime() - 3 * 60 * 60 * 1000);
+    if (new Date() >= cutoffTime) {
+      throw new AppError('No se pueden hacer predicciones faltando menos de 3 horas para el partido', 400);
     }
 
     if (predictedHome < 0 || predictedAway < 0) {
@@ -46,8 +47,9 @@ export class PredictionsService {
       throw new AppError('Cannot edit prediction after the match has started', 400);
     }
 
-    if (new Date() >= match.matchDate) {
-      throw new AppError('Cannot edit prediction after the match start time', 400);
+    const cutoffTime = new Date(match.matchDate.getTime() - 3 * 60 * 60 * 1000);
+    if (new Date() >= cutoffTime) {
+      throw new AppError('No se pueden editar predicciones faltando menos de 3 horas para el partido', 400);
     }
 
     if (predictedHome < 0 || predictedAway < 0) {
