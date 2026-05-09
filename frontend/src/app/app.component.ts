@@ -26,7 +26,7 @@ import { AuthService } from './auth/services/auth.service';
         </button>
         <div class="toolbar-brand" routerLink="/matches">
           <span class="brand-icon">⚽</span>
-          <span class="brand-text">Polla Mundialista</span>
+          <span class="brand-text">Polla Mundialista San Mateo</span>
         </div>
         <span class="toolbar-spacer"></span>
         <div class="toolbar-actions">
@@ -75,7 +75,7 @@ import { AuthService } from './auth/services/auth.service';
           (closedStart)="sidenavOpen = false">
           <div class="sidenav-header">
             <span class="brand-icon">⚽</span>
-            <span class="brand-text">Polla Mundialista</span>
+            <span class="brand-text">Polla Mundialista San Mateo</span>
           </div>
           <mat-nav-list>
             <a mat-list-item routerLink="/matches" routerLinkActive="active-link" (click)="sidenavOpen = false">

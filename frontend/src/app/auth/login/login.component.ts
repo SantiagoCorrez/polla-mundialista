@@ -24,7 +24,7 @@ import { AuthService } from '../services/auth.service';
       <div class="auth-card animate-scale-in">
         <div class="auth-header">
           <div class="auth-logo">⚽</div>
-          <h1 class="auth-title">Polla Mundialista</h1>
+          <h1 class="auth-title">Polla Mundialista San Mateo</h1>
           <p class="auth-subtitle">Inicia sesión para predecir</p>
         </div>
 

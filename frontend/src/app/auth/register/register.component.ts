@@ -25,7 +25,7 @@ import { AuthService } from '../services/auth.service';
         <div class="auth-header">
           <div class="auth-logo">⚽</div>
           <h1 class="auth-title">Crear Cuenta</h1>
-          <p class="auth-subtitle">Únete a la Polla Mundialista</p>
+          <p class="auth-subtitle">Únete a la Polla Mundialista San Mateo</p>
         </div>
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
