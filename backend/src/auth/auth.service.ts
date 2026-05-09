@@ -66,6 +66,7 @@ export class AuthService {
         email: email.toLowerCase(),
         cedula,
         passwordHash,
+        isActive: false,
       },
       select: {
         id: true,

@@ -147,7 +147,7 @@ export class RegisterComponent {
 
     this.authService.register(this.form.value).subscribe({
       next: () => {
-        this.snackBar.open('Cuenta creada. Inicia sesión.', 'OK', { duration: 4000, panelClass: 'snack-success' });
+        this.snackBar.open('Cuenta creada. Espera a que un administrador te active.', 'OK', { duration: 5000, panelClass: 'snack-success' });
         this.router.navigate(['/login']);
       },
       error: (err) => {
