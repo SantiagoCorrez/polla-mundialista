@@ -19,4 +19,4 @@ COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/clie
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 EXPOSE 3000
-CMD ["npm", "start"]
+CMD npx --yes prisma migrate deploy && npm start
