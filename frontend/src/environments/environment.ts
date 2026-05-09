@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:3000/api',
+  apiUrl: 'https://p01--polla-mundialista--zzztfb9f9gf4.code.run/api',
 };
