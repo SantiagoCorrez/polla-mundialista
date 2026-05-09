@@ -3,6 +3,7 @@ export interface User {
   fullName: string;
   username: string;
   email: string;
+  cedula: string;
   role: 'USER' | 'ADMIN';
   isActive: boolean;
   createdAt: string;

@@ -12,6 +12,7 @@ model User {
   fullName     String
   username     String         @unique
   email        String         @unique
+  cedula       String         @unique @default(dbgenerated("gen_random_uuid()::text"))
   passwordHash String
   role         Role           @default(USER)
   isActive     Boolean        @default(true)

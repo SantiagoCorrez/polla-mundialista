@@ -18,6 +18,7 @@ export interface RegisterInput {
   fullName: string;
   username: string;
   email: string;
+  cedula: string;
   password: string;
 }
 
@@ -28,7 +29,7 @@ export interface LoginInput {
 
 export class AuthService {
   async register(input: RegisterInput) {
-    const { fullName, username, email, password } = input;
+    const { fullName, username, email, cedula, password } = input;
 
     // Validate password strength
     if (!PASSWORD_REGEX.test(password)) {
@@ -50,6 +51,12 @@ export class AuthService {
       throw new AppError('Username already taken', 409);
     }
 
+    // Check unique cedula
+    const existingCedula = await prisma.user.findUnique({ where: { cedula } });
+    if (existingCedula) {
+      throw new AppError('Cedula already registered', 409);
+    }
+
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
     const user = await prisma.user.create({
@@ -57,6 +64,7 @@ export class AuthService {
         fullName,
         username,
         email: email.toLowerCase(),
+        cedula,
         passwordHash,
       },
       select: {
@@ -64,6 +72,7 @@ export class AuthService {
         fullName: true,
         username: true,
         email: true,
+        cedula: true,
         role: true,
         createdAt: true,
       },

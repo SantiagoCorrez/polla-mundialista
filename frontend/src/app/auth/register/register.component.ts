@@ -53,6 +53,13 @@ import { AuthService } from '../services/auth.service';
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Cédula</mat-label>
+            <input matInput formControlName="cedula">
+            <mat-icon matPrefix>badge</mat-icon>
+            <mat-error *ngIf="form.get('cedula')?.hasError('required')">Requerido</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
             <mat-label>Contraseña</mat-label>
             <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password">
             <mat-icon matPrefix>lock</mat-icon>
@@ -126,6 +133,7 @@ export class RegisterComponent {
       fullName: ['', Validators.required],
       username: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
+      cedula: ['', Validators.required],
       password: ['', [
         Validators.required,
         Validators.pattern(/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/),

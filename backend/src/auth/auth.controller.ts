@@ -7,13 +7,13 @@ const authService = new AuthService();
 export class AuthController {
   async register(req: Request, res: Response, next: NextFunction) {
     try {
-      const { fullName, username, email, password } = req.body;
+      const { fullName, username, email, cedula, password } = req.body;
 
-      if (!fullName || !username || !email || !password) {
-        throw new AppError('All fields are required: fullName, username, email, password', 400);
+      if (!fullName || !username || !email || !cedula || !password) {
+        throw new AppError('All fields are required: fullName, username, email, cedula, password', 400);
       }
 
-      const user = await authService.register({ fullName, username, email, password });
+      const user = await authService.register({ fullName, username, email, cedula, password });
 
       res.status(201).json({
         status: 'success',
