@@ -195,4 +195,21 @@ export class UsersService {
       orderBy: { match: { matchDate: 'asc' } },
     });
   }
+
+  async adminResetPassword(userId: string, newPassword: string) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new AppError('User not found', 404);
+
+    if (!PASSWORD_REGEX.test(newPassword)) {
+      throw new AppError(
+        'Password must be at least 8 characters with 1 uppercase, 1 number, and 1 symbol',
+        400
+      );
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+
+    return { message: 'Password reset successfully' };
+  }
 }

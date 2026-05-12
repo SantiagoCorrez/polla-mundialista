@@ -143,6 +143,10 @@ export class ApiService {
     return this.http.patch<ApiResponse<any>>(`${this.api}/users/${id}/role`, { role });
   }
 
+  adminResetPassword(id: string, newPassword: string): Observable<ApiResponse<any>> {
+    return this.http.patch<ApiResponse<any>>(`${this.api}/users/${id}/reset-password`, { newPassword });
+  }
+
   getUserPredictions(id: string): Observable<ApiResponse<Prediction[]>> {
     return this.http.get<ApiResponse<Prediction[]>>(`${this.api}/users/${id}/predictions`);
   }

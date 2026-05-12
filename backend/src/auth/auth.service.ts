@@ -39,12 +39,6 @@ export class AuthService {
       );
     }
 
-    // Check unique email
-    const existingEmail = await prisma.user.findUnique({ where: { email } });
-    if (existingEmail) {
-      throw new AppError('Email already registered', 409);
-    }
-
     // Check unique username
     const existingUsername = await prisma.user.findUnique({ where: { username } });
     if (existingUsername) {
@@ -85,11 +79,11 @@ export class AuthService {
   async login(input: LoginInput) {
     const { identifier, password } = input;
 
-    // Find user by email or username
+    // Find user by cedula or username
     const user = await prisma.user.findFirst({
       where: {
         OR: [
-          { email: identifier.toLowerCase() },
+          { cedula: identifier },
           { username: identifier },
         ],
       },

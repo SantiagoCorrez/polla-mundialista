@@ -30,8 +30,8 @@ import { AuthService } from '../services/auth.service';
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Email o Username</mat-label>
-            <input matInput formControlName="identifier" placeholder="tu@email.com">
+            <mat-label>Usuario o Cédula</mat-label>
+            <input matInput formControlName="identifier" placeholder="juan123 o 1712345678">
             <mat-icon matPrefix>person</mat-icon>
             <mat-error *ngIf="form.get('identifier')?.hasError('required')">Requerido</mat-error>
           </mat-form-field>

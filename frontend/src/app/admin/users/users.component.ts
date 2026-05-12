@@ -11,7 +11,50 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../shared/api.service';
+import { Inject } from '@angular/core';
+
+@Component({
+  selector: 'app-reset-password-dialog',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule],
+  template: `
+    <h2 mat-dialog-title style="font-family: 'Outfit', sans-serif;">Cambiar Contraseña</h2>
+    <mat-dialog-content>
+      <p style="margin-bottom: 16px;">Nueva contraseña para <strong>{{data.username}}</strong></p>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline" style="width: 100%;">
+          <mat-label>Nueva Contraseña</mat-label>
+          <input matInput type="password" formControlName="newPassword">
+          <mat-hint>Mín 8 chars, 1 mayúscula, 1 número, 1 símbolo</mat-hint>
+        </mat-form-field>
+      </form>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close>Cancelar</button>
+      <button mat-raised-button color="primary" class="btn-gold" [disabled]="form.invalid" (click)="submit()">Guardar</button>
+    </mat-dialog-actions>
+  `
+})
+export class ResetPasswordDialogComponent {
+  form: FormGroup;
+  constructor(
+    private fb: FormBuilder,
+    public dialogRef: MatDialogRef<ResetPasswordDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { username: string }
+  ) {
+    this.form = this.fb.group({
+      newPassword: ['', Validators.required]
+    });
+  }
+  submit() {
+    if (this.form.valid) {
+      this.dialogRef.close(this.form.value.newPassword);
+    }
+  }
+}
 
 @Component({
   selector: 'app-admin-users',
@@ -19,7 +62,7 @@ import { ApiService } from '../../shared/api.service';
   imports: [
     CommonModule, FormsModule, MatTableModule, MatButtonModule, MatIconModule,
     MatFormFieldModule, MatInputModule, MatPaginatorModule, MatSnackBarModule,
-    MatChipsModule, MatMenuModule, MatProgressSpinnerModule,
+    MatChipsModule, MatMenuModule, MatProgressSpinnerModule, MatDialogModule
   ],
   template: `
     <div class="page-container">
@@ -85,6 +128,10 @@ import { ApiService } from '../../shared/api.service';
                   <mat-icon>admin_panel_settings</mat-icon>
                   {{ u.role === 'ADMIN' ? 'Quitar Admin' : 'Hacer Admin' }}
                 </button>
+                <button mat-menu-item (click)="resetPassword(u)">
+                  <mat-icon>password</mat-icon>
+                  Cambiar Contraseña
+                </button>
               </mat-menu>
             </td>
           </ng-container>
@@ -111,7 +158,7 @@ export class AdminUsersComponent implements OnInit {
   page = 1;
   private searchTimeout: any;
 
-  constructor(private api: ApiService, private snackBar: MatSnackBar) {}
+  constructor(private api: ApiService, private snackBar: MatSnackBar, private dialog: MatDialog) {}
 
   ngOnInit() { this.load(); }
 
@@ -136,6 +183,26 @@ export class AdminUsersComponent implements OnInit {
     const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN';
     this.api.setUserRole(id, newRole).subscribe({
       next: () => { this.load(); this.snackBar.open('Rol actualizado', 'OK', { duration: 2000 }); },
+    });
+  }
+
+  resetPassword(user: any) {
+    const dialogRef = this.dialog.open(ResetPasswordDialogComponent, {
+      width: '400px',
+      data: { username: user.username }
+    });
+
+    dialogRef.afterClosed().subscribe(newPassword => {
+      if (newPassword) {
+        this.api.adminResetPassword(user.id, newPassword).subscribe({
+          next: () => {
+            this.snackBar.open('Contraseña actualizada correctamente', 'OK', { duration: 3000, panelClass: 'snack-success' });
+          },
+          error: (err) => {
+            this.snackBar.open(err.error?.message || 'Error al actualizar contraseña', 'OK', { duration: 4000, panelClass: 'snack-error' });
+          }
+        });
+      }
     });
   }
 }

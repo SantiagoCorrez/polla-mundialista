@@ -29,7 +29,7 @@ export class AuthController {
       const { identifier, password } = req.body;
 
       if (!identifier || !password) {
-        throw new AppError('Identifier (email/username) and password are required', 400);
+        throw new AppError('Identifier (username/cedula) and password are required', 400);
       }
 
       const result = await authService.login({ identifier, password });

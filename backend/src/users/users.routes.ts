@@ -18,5 +18,6 @@ router.get('/', authMiddleware, adminGuard, controller.listUsers);
 router.patch('/:id/toggle-active', authMiddleware, adminGuard, controller.toggleUserActive);
 router.patch('/:id/role', authMiddleware, adminGuard, sanitizeBody, controller.setUserRole);
 router.get('/:id/predictions', authMiddleware, adminGuard, controller.getUserPredictions);
+router.patch('/:id/reset-password', authMiddleware, adminGuard, sanitizeBody, controller.adminResetPassword);
 
 export { router as userRoutes };

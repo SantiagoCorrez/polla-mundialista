@@ -94,4 +94,17 @@ export class UsersController {
       next(error);
     }
   }
+
+  async adminResetPassword(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { newPassword } = req.body;
+      if (!newPassword) {
+        throw new AppError('New password is required', 400);
+      }
+      const result = await usersService.adminResetPassword(req.params.id, newPassword);
+      res.json({ status: 'success', data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
