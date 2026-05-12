@@ -19,7 +19,7 @@ import { Inject } from '@angular/core';
 @Component({
   selector: 'app-reset-password-dialog',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatDialogModule, MatDialogRef],
+  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatDialogModule],
   template: `
     <h2 mat-dialog-title style="font-family: 'Outfit', sans-serif;">Cambiar Contraseña</h2>
     <mat-dialog-content>
