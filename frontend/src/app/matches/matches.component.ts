@@ -179,7 +179,7 @@ import { AuthService } from '../auth/services/auth.service';
                 <p style="color:var(--text-secondary); font-size:0.9rem">Elige tus 4 mejores del torneo y al máximo goleador.</p>
                 
                 <div *ngIf="isLocked" class="badge badge-red" style="margin-top:12px; display:inline-block">
-                  🔒 Bloqueado: El torneo ya comenzó
+                  🔒 Bloqueado: El plazo máximo ha finalizado
                 </div>
               </div>
 
@@ -409,8 +409,8 @@ export class MatchesComponent implements OnInit {
       }
     });
 
-    // Check lock manually (Tournament starts 2026-06-11T16:00:00Z)
-    if (new Date() >= new Date('2026-06-11T16:00:00Z')) {
+    // Check lock manually (Deadline: July 10, 2026 12:00 PM)
+    if (new Date() >= new Date('2026-07-10T12:00:00-05:00')) {
       this.isLocked = true;
       this.top4Form.disable();
     }

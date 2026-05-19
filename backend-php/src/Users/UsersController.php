@@ -81,4 +81,16 @@ class UsersController
         $predictions = $this->service->getUserPredictions($req->params['id']);
         $res->success($predictions);
     }
+
+    public function exportUsers(Request $req, Response $res): void
+    {
+        $buffer = $this->service->exportUsersExcel();
+        
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="reporte_usuarios.xlsx"');
+        header('Cache-Control: max-age=0');
+        
+        echo $buffer;
+        exit;
+    }
 }

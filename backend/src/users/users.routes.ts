@@ -14,6 +14,7 @@ router.post('/change-password', authMiddleware, sanitizeBody, controller.changeP
 router.get('/predictions', authMiddleware, controller.getPredictionHistory);
 
 // Admin routes
+router.get('/export-excel', authMiddleware, adminGuard, controller.exportUsers);
 router.get('/', authMiddleware, adminGuard, controller.listUsers);
 router.patch('/:id/toggle-active', authMiddleware, adminGuard, controller.toggleUserActive);
 router.patch('/:id/role', authMiddleware, adminGuard, sanitizeBody, controller.setUserRole);

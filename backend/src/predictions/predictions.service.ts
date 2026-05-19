@@ -122,8 +122,8 @@ export class PredictionsService {
   }
 
   async upsertTournamentPrediction(userId: string, data: { championId?: string, runnerUpId?: string, thirdPlaceId?: string, fourthPlaceId?: string, topScorer?: string }) {
-    if (new Date() >= new Date('2026-06-11T16:00:00Z')) {
-      throw new AppError('No se pueden modificar estas predicciones después del inicio del torneo', 400);
+    if (new Date() >= new Date('2026-07-10T12:00:00-05:00')) {
+      throw new AppError('El plazo máximo para modificar estas predicciones ha finalizado', 400);
     }
 
     return prisma.tournamentPrediction.upsert({

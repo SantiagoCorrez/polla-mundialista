@@ -92,6 +92,7 @@ $router->group('/api/users', [AuthMiddleware::class], function ($router) {
     $router->get('/predictions', [UsersController::class, 'getPredictionHistory']);
 
     // Admin routes
+    $router->get('/export-excel', [UsersController::class, 'exportUsers'], [AdminMiddleware::class]);
     $router->get('', [UsersController::class, 'listUsers'], [AdminMiddleware::class]);
     $router->patch('/:id/toggle-active', [UsersController::class, 'toggleUserActive'], [AdminMiddleware::class]);
     $router->patch('/:id/role', [UsersController::class, 'setUserRole'], [AdminMiddleware::class]);

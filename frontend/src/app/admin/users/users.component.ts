@@ -68,12 +68,16 @@ export class ResetPasswordDialogComponent {
     <div class="page-container">
       <h1 class="page-title">👥 Gestión de Usuarios</h1>
 
-      <div class="filters card-glass">
-        <mat-form-field appearance="outline" style="flex:1; min-width:200px">
+      <div class="filters card-glass" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <mat-form-field appearance="outline" style="flex:1; min-width:200px; max-width: 400px; margin-bottom: -1.25em;">
           <mat-label>Buscar</mat-label>
           <input matInput [(ngModel)]="search" (ngModelChange)="onSearch()" placeholder="Nombre, username o email">
           <mat-icon matPrefix>search</mat-icon>
         </mat-form-field>
+        <button mat-raised-button color="primary" class="btn-gold" (click)="downloadExcel()">
+          <mat-icon>download</mat-icon>
+          Descargar Excel
+        </button>
       </div>
 
       <div *ngIf="loading()" class="loading-container"><mat-spinner diameter="40"></mat-spinner></div>
@@ -202,6 +206,22 @@ export class AdminUsersComponent implements OnInit {
             this.snackBar.open(err.error?.message || 'Error al actualizar contraseña', 'OK', { duration: 4000, panelClass: 'snack-error' });
           }
         });
+      }
+    });
+  }
+
+  downloadExcel() {
+    this.api.downloadUsersExcel().subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'reporte_usuarios.xlsx';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => {
+        this.snackBar.open('Error al descargar el reporte', 'OK', { duration: 3000, panelClass: 'snack-error' });
       }
     });
   }

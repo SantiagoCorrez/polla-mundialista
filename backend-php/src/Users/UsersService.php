@@ -5,6 +5,8 @@ namespace App\Users;
 use App\Config\Database;
 use App\Core\AppException;
 use PDO;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class UsersService
 {
@@ -340,5 +342,53 @@ class UsersService
                 ],
             ],
         ];
+    }
+
+    public function exportUsersExcel(): string
+    {
+        $usersData = $this->listUsers(1, 1000000); // Get all users
+        $users = $usersData['users'];
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Usuarios Registrados');
+
+        $headers = ['ID', 'Nombre Completo', 'Usuario', 'Email', 'Rol', 'Estado', 'Puntos Totales', 'Predicciones', 'Fecha Registro'];
+        $column = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($column . '1', $header);
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+            $column++;
+        }
+
+        $headerStyle = [
+            'font' => ['bold' => true],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['argb' => 'FFE0E0E0'],
+            ],
+        ];
+        $sheet->getStyle('A1:I1')->applyFromArray($headerStyle);
+
+        $row = 2;
+        foreach ($users as $user) {
+            $sheet->setCellValue('A' . $row, $user['id']);
+            $sheet->setCellValue('B' . $row, $user['fullName']);
+            $sheet->setCellValue('C' . $row, $user['username']);
+            $sheet->setCellValue('D' . $row, $user['email']);
+            $sheet->setCellValue('E' . $row, $user['role']);
+            $sheet->setCellValue('F' . $row, $user['isActive'] ? 'Activo' : 'Bloqueado');
+            $sheet->setCellValue('G' . $row, $user['totalPoints']);
+            $sheet->setCellValue('H' . $row, $user['_count']['predictions']);
+            $sheet->setCellValue('I' . $row, explode(' ', $user['createdAt'])[0] ?? '');
+            $row++;
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        ob_start();
+        $writer->save('php://output');
+        $content = ob_get_clean();
+
+        return $content ?: '';
     }
 }

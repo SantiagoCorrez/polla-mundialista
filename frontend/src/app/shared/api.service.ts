@@ -135,6 +135,10 @@ export class ApiService {
     return this.http.get<ApiResponse<any>>(`${this.api}/users`, { params });
   }
 
+  downloadUsersExcel(): Observable<Blob> {
+    return this.http.get(`${this.api}/users/export-excel`, { responseType: 'blob' });
+  }
+
   toggleUserActive(id: string): Observable<ApiResponse<any>> {
     return this.http.patch<ApiResponse<any>>(`${this.api}/users/${id}/toggle-active`, {});
   }

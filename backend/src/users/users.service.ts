@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { AppError } from '../common/middlewares/error-handler';
+import * as ExcelJS from 'exceljs';
 
 const prisma = new PrismaClient();
 const SALT_ROUNDS = 12;
@@ -211,5 +212,73 @@ export class UsersService {
     await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
 
     return { message: 'Password reset successfully' };
+  }
+
+  async exportUsersExcel() {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        fullName: true,
+        username: true,
+        email: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        _count: { select: { predictions: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const usersWithPoints = await Promise.all(
+      users.map(async (user) => {
+        const result = await prisma.prediction.aggregate({
+          where: { userId: user.id },
+          _sum: { points: true },
+        });
+        return { ...user, totalPoints: result._sum.points || 0 };
+      })
+    );
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'Polla Mundialista';
+    workbook.created = new Date();
+
+    const sheet = workbook.addWorksheet('Usuarios Registrados');
+
+    sheet.columns = [
+      { header: 'ID', key: 'id', width: 36 },
+      { header: 'Nombre Completo', key: 'fullName', width: 30 },
+      { header: 'Usuario', key: 'username', width: 20 },
+      { header: 'Email', key: 'email', width: 30 },
+      { header: 'Rol', key: 'role', width: 15 },
+      { header: 'Estado', key: 'isActive', width: 15 },
+      { header: 'Puntos Totales', key: 'totalPoints', width: 15 },
+      { header: 'Predicciones', key: 'predictions', width: 15 },
+      { header: 'Fecha Registro', key: 'createdAt', width: 20 },
+    ];
+
+    // Style the header row
+    sheet.getRow(1).font = { bold: true };
+    sheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' }
+    };
+
+    usersWithPoints.forEach((user) => {
+      sheet.addRow({
+        id: user.id,
+        fullName: user.fullName,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive ? 'Activo' : 'Bloqueado',
+        totalPoints: user.totalPoints,
+        predictions: user._count?.predictions || 0,
+        createdAt: user.createdAt.toISOString().split('T')[0],
+      });
+    });
+
+    return await workbook.xlsx.writeBuffer();
   }
 }

@@ -107,4 +107,15 @@ export class UsersController {
       next(error);
     }
   }
+
+  async exportUsers(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const buffer = await usersService.exportUsersExcel();
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename="reporte_usuarios.xlsx"');
+      res.send(buffer);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
