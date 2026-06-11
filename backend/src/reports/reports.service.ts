@@ -409,10 +409,22 @@ export class ReportsService {
 
   // Report 5: Today's Match Predictions → Excel
   async generateTodayPredictionsExcel(res: Response) {
-    // Get today's date range in server local time
+    // Get today's date range in Colombia time (America/Bogota, UTC-5)
+    const COLOMBIA_TZ = 'America/Bogota';
     const now = new Date();
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    const colombiaFormatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: COLOMBIA_TZ,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    const parts = colombiaFormatter.formatToParts(now);
+    const year = parseInt(parts.find(p => p.type === 'year')!.value);
+    const month = parseInt(parts.find(p => p.type === 'month')!.value) - 1;
+    const day = parseInt(parts.find(p => p.type === 'day')!.value);
+    // Colombia is UTC-5: start of day 00:00 COT = 05:00 UTC, end of day 23:59:59.999 COT = next day 04:59:59.999 UTC
+    const startOfDay = new Date(Date.UTC(year, month, day, 5, 0, 0, 0));
+    const endOfDay = new Date(Date.UTC(year, month, day + 1, 4, 59, 59, 999));
 
     const matches = await prisma.match.findMany({
       where: {
@@ -452,7 +464,7 @@ export class ReportsService {
 
       // Summary sheet
       const summarySheet = workbook.addWorksheet('Resumen del Día');
-      const todayStr = now.toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const todayStr = now.toLocaleDateString('es-CO', { timeZone: COLOMBIA_TZ, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
       summarySheet.mergeCells('A1:E1');
       summarySheet.getCell('A1').value = `⚽ Predicciones del día - ${todayStr}`;
@@ -477,7 +489,7 @@ export class ReportsService {
         summarySheet.addRow({
           num: i + 1,
           match: `${m.homeTeam.name} vs ${m.awayTeam.name}`,
-          time: m.matchDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+          time: m.matchDate.toLocaleTimeString('es-CO', { timeZone: COLOMBIA_TZ, hour: '2-digit', minute: '2-digit' }),
           status: m.status === 'SCHEDULED' ? 'Programado' : m.status === 'LIVE' ? 'En Vivo' : 'Finalizado',
           predictions: m.predictions.length,
         });
@@ -496,7 +508,7 @@ export class ReportsService {
         sheet.getCell('A1').alignment = { horizontal: 'center' };
 
         sheet.mergeCells('A2:G2');
-        const matchTime = match.matchDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+        const matchTime = match.matchDate.toLocaleTimeString('es-CO', { timeZone: COLOMBIA_TZ, hour: '2-digit', minute: '2-digit' });
         const statusLabel = match.status === 'SCHEDULED' ? 'Programado' : match.status === 'LIVE' ? 'En Vivo' : 'Finalizado';
         let headerInfo = `Hora: ${matchTime} | Estado: ${statusLabel}`;
         if (match.homeScore !== null) {
