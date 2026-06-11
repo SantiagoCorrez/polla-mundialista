@@ -382,8 +382,8 @@ export class MatchesComponent implements OnInit {
     });
   }
 
-  ngOnInit() { 
-    this.loadData(); 
+  ngOnInit() {
+    this.loadData();
     this.loadTeams();
     this.loadTop4();
   }
@@ -410,7 +410,7 @@ export class MatchesComponent implements OnInit {
     });
 
     // Check lock manually (Deadline: July 10, 2026 12:00 PM)
-    if (new Date() >= new Date('2026-07-10T12:00:00-05:00')) {
+    if (new Date() >= new Date('2026-06-11T09:00:00-05:00')) {
       this.isLocked = true;
       this.top4Form.disable();
     }
