@@ -172,6 +172,10 @@ export class ApiService {
     return this.http.get(`${this.api}/reports/summary/pdf`, { responseType: 'blob' });
   }
 
+  downloadTodayPredictionsExcel(): Observable<Blob> {
+    return this.http.get(`${this.api}/reports/today/excel`, { responseType: 'blob' });
+  }
+
   downloadUserPredictionsPdf(userId: string): Observable<Blob> {
     return this.http.get(`${this.api}/reports/user/${userId}/pdf`, { responseType: 'blob' });
   }

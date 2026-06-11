@@ -53,4 +53,12 @@ export class ReportsController {
       next(error);
     }
   }
+
+  async getTodayPredictionsExcel(_req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      await reportsService.generateTodayPredictionsExcel(res);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

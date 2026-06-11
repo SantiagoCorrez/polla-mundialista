@@ -13,5 +13,6 @@ router.get('/tournament/excel', authMiddleware, adminGuard, controller.getTourna
 router.get('/match/:matchId/excel', authMiddleware, adminGuard, controller.getMatchPredictionsExcel);
 router.get('/summary/pdf', authMiddleware, adminGuard, controller.getPollaSummaryPdf);
 router.get('/user/:userId/pdf', authMiddleware, adminGuard, controller.getUserPredictionsPdf);
+router.get('/today/excel', authMiddleware, adminGuard, controller.getTodayPredictionsExcel);
 
 export { router as reportRoutes };

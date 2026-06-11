@@ -48,6 +48,17 @@ import { ApiService } from '../../shared/api.service';
             Descargar Excel
           </button>
         </div>
+
+        <div class="report-card card-glass animate-fade-in-up" style="animation-delay:300ms">
+          <div class="report-icon">📅</div>
+          <h3>Predicciones del Día</h3>
+          <p>Excel con todas las predicciones de los partidos de hoy, incluyendo quién no ha predicho.</p>
+          <button mat-raised-button class="btn-gold" (click)="downloadTodayExcel()" [disabled]="downloading === 'today'">
+            <mat-spinner *ngIf="downloading === 'today'" diameter="18"></mat-spinner>
+            <mat-icon *ngIf="downloading !== 'today'">download</mat-icon>
+            Descargar Excel
+          </button>
+        </div>
       </div>
     </div>
   `,
@@ -82,6 +93,14 @@ export class AdminReportsComponent {
     this.downloading = 'tournament';
     this.api.downloadTournamentPredictionsExcel().subscribe({
       next: (blob) => { this.downloadBlob(blob, 'predicciones_top4.xlsx'); this.downloading = ''; },
+      error: () => { this.snackBar.open('Error al descargar', 'OK', { duration: 3000, panelClass: 'snack-error' }); this.downloading = ''; },
+    });
+  }
+
+  downloadTodayExcel() {
+    this.downloading = 'today';
+    this.api.downloadTodayPredictionsExcel().subscribe({
+      next: (blob) => { this.downloadBlob(blob, `predicciones_del_dia_${new Date().toISOString().split('T')[0]}.xlsx`); this.downloading = ''; },
       error: () => { this.snackBar.open('Error al descargar', 'OK', { duration: 3000, panelClass: 'snack-error' }); this.downloading = ''; },
     });
   }

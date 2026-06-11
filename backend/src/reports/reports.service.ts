@@ -407,6 +407,179 @@ export class ReportsService {
     doc.end();
   }
 
+  // Report 5: Today's Match Predictions → Excel
+  async generateTodayPredictionsExcel(res: Response) {
+    // Get today's date range in server local time
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+
+    const matches = await prisma.match.findMany({
+      where: {
+        matchDate: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+      include: {
+        homeTeam: true,
+        awayTeam: true,
+        predictions: {
+          include: {
+            user: { select: { username: true, fullName: true } },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+      orderBy: { matchDate: 'asc' },
+    });
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'Polla Mundialista';
+
+    if (matches.length === 0) {
+      // Create a single sheet indicating no matches today
+      const sheet = workbook.addWorksheet('Sin partidos');
+      sheet.getCell('A1').value = 'No hay partidos programados para hoy.';
+      sheet.getCell('A1').font = { bold: true, size: 14 };
+    } else {
+      // Get all active users to show who didn't predict
+      const allUsers = await prisma.user.findMany({
+        where: { isActive: true },
+        select: { id: true, fullName: true, username: true },
+        orderBy: { fullName: 'asc' },
+      });
+
+      // Summary sheet
+      const summarySheet = workbook.addWorksheet('Resumen del Día');
+      const todayStr = now.toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+      summarySheet.mergeCells('A1:E1');
+      summarySheet.getCell('A1').value = `⚽ Predicciones del día - ${todayStr}`;
+      summarySheet.getCell('A1').font = { bold: true, size: 14, color: { argb: 'FF1A472A' } };
+      summarySheet.getCell('A1').alignment = { horizontal: 'center' };
+
+      summarySheet.columns = [
+        { key: 'num', width: 8 },
+        { key: 'match', width: 40 },
+        { key: 'time', width: 12 },
+        { key: 'status', width: 15 },
+        { key: 'predictions', width: 15 },
+      ];
+
+      summarySheet.addRow({});
+      const sumHeaderRow = summarySheet.addRow({ num: '#', match: 'Partido', time: 'Hora', status: 'Estado', predictions: 'Predicciones' });
+      sumHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      sumHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1A472A' } };
+      sumHeaderRow.alignment = { horizontal: 'center' };
+
+      matches.forEach((m, i) => {
+        summarySheet.addRow({
+          num: i + 1,
+          match: `${m.homeTeam.name} vs ${m.awayTeam.name}`,
+          time: m.matchDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+          status: m.status === 'SCHEDULED' ? 'Programado' : m.status === 'LIVE' ? 'En Vivo' : 'Finalizado',
+          predictions: m.predictions.length,
+        });
+      });
+
+      // One sheet per match
+      for (let mi = 0; mi < matches.length; mi++) {
+        const match = matches[mi];
+        const sheetName = `${mi + 1}. ${match.homeTeam.name} vs ${match.awayTeam.name}`.substring(0, 31);
+        const sheet = workbook.addWorksheet(sheetName);
+
+        // Match header info
+        sheet.mergeCells('A1:G1');
+        sheet.getCell('A1').value = `${match.homeTeam.name} vs ${match.awayTeam.name}`;
+        sheet.getCell('A1').font = { bold: true, size: 13, color: { argb: 'FF1A472A' } };
+        sheet.getCell('A1').alignment = { horizontal: 'center' };
+
+        sheet.mergeCells('A2:G2');
+        const matchTime = match.matchDate.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+        const statusLabel = match.status === 'SCHEDULED' ? 'Programado' : match.status === 'LIVE' ? 'En Vivo' : 'Finalizado';
+        let headerInfo = `Hora: ${matchTime} | Estado: ${statusLabel}`;
+        if (match.homeScore !== null) {
+          headerInfo += ` | Resultado: ${match.homeScore} - ${match.awayScore}`;
+        }
+        sheet.getCell('A2').value = headerInfo;
+        sheet.getCell('A2').font = { size: 10, color: { argb: 'FF666666' } };
+        sheet.getCell('A2').alignment = { horizontal: 'center' };
+
+        sheet.addRow({});
+
+        sheet.columns = [
+          { key: 'num', width: 8 },
+          { key: 'fullName', width: 25 },
+          { key: 'username', width: 18 },
+          { key: 'predHome', width: 14 },
+          { key: 'predAway', width: 14 },
+          { key: 'prediction', width: 16 },
+          { key: 'points', width: 10 },
+          { key: 'type', width: 16 },
+        ];
+
+        const headerRow = sheet.addRow({
+          num: '#',
+          fullName: 'Nombre',
+          username: 'Username',
+          predHome: `Goles ${match.homeTeam.name}`,
+          predAway: `Goles ${match.awayTeam.name}`,
+          prediction: 'Predicción',
+          points: 'Puntos',
+          type: 'Tipo',
+        });
+        headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1A472A' } };
+        headerRow.alignment = { horizontal: 'center' };
+
+        // Map predictions by userId
+        const predByUser = new Map(match.predictions.map(p => [p.userId, p]));
+
+        let rowNum = 1;
+        for (const user of allUsers) {
+          const pred = predByUser.get(user.id);
+          const row = sheet.addRow({
+            num: rowNum++,
+            fullName: user.fullName,
+            username: user.username,
+            predHome: pred ? pred.predictedHome : '-',
+            predAway: pred ? pred.predictedAway : '-',
+            prediction: pred ? `${pred.predictedHome} - ${pred.predictedAway}` : 'SIN PREDICCIÓN',
+            points: pred?.points ?? '-',
+            type: pred?.pointType || '-',
+          });
+
+          // Highlight users without predictions
+          if (!pred) {
+            row.eachCell((cell) => {
+              cell.font = { color: { argb: 'FFCC0000' }, italic: true };
+            });
+          }
+
+          // Alternate row colors
+          if (rowNum % 2 === 0) {
+            row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF0F0F0' } };
+          }
+        }
+
+        // Add count summary at the bottom
+        sheet.addRow({});
+        const totalRow = sheet.addRow({
+          fullName: `Total predicciones: ${match.predictions.length} / ${allUsers.length} usuarios`,
+        });
+        totalRow.font = { bold: true, color: { argb: 'FF1A472A' } };
+      }
+    }
+
+    const todayFormatted = now.toISOString().split('T')[0];
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=predicciones_del_dia_${todayFormatted}.xlsx`);
+
+    await workbook.xlsx.write(res);
+    res.end();
+  }
+
   // Admin dashboard stats
   async getDashboardStats() {
     const [totalUsers, totalPredictions, totalMatches, finishedMatches] = await Promise.all([
