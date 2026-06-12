@@ -5,6 +5,11 @@ import { Response } from 'express';
 
 const prisma = new PrismaClient();
 
+// Excel worksheet names cannot contain: * ? : \ / [ ]
+function sanitizeSheetName(name: string): string {
+  return name.replace(/[*?:\\/\[\]]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 export class ReportsService {
 
   // Report 1: General Ranking → Excel
@@ -114,7 +119,7 @@ export class ReportsService {
     if (!match) throw new Error('Match not found');
 
     const workbook = new ExcelJS.Workbook();
-    const title = `${match.homeTeam.name} vs ${match.awayTeam.name}`;
+    const title = sanitizeSheetName(`${match.homeTeam.name} vs ${match.awayTeam.name}`);
     const sheet = workbook.addWorksheet(title.substring(0, 31));
 
     sheet.columns = [
@@ -498,7 +503,7 @@ export class ReportsService {
       // One sheet per match
       for (let mi = 0; mi < matches.length; mi++) {
         const match = matches[mi];
-        const sheetName = `${mi + 1}. ${match.homeTeam.name} vs ${match.awayTeam.name}`.substring(0, 31);
+        const sheetName = sanitizeSheetName(`${mi + 1}. ${match.homeTeam.name} vs ${match.awayTeam.name}`).substring(0, 31);
         const sheet = workbook.addWorksheet(sheetName);
 
         // Match header info
