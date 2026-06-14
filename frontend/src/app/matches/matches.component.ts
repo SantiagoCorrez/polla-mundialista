@@ -101,7 +101,7 @@ import { AuthService } from '../auth/services/auth.service';
               <!-- Prediction Form -->
               <div class="prediction-section" *ngIf="match.status === 'SCHEDULED'">
                 <div *ngIf="isMatchLocked(match.matchDate)" class="badge badge-red" style="margin-bottom: 12px; display: inline-block;">
-                  🔒 Bloqueado: El primer partido del día ya comenzó
+                  🔒 Bloqueado: Falta menos de 3 horas
                 </div>
 
                 <div class="pred-form" *ngIf="!getPrediction(match.id) && !isMatchLocked(match.matchDate)">
@@ -367,7 +367,6 @@ export class MatchesComponent implements OnInit {
   allTeams: Team[] = [];
   savingTop4 = false;
   isLocked = false;
-  allMatchesFirstMatchMap = new Map<string, Date>();
 
   constructor(
     private api: ApiService,
@@ -387,7 +386,6 @@ export class MatchesComponent implements OnInit {
     this.loadData();
     this.loadTeams();
     this.loadTop4();
-    this.loadAllMatchesForLock();
   }
 
   loadTeams() {
@@ -476,32 +474,8 @@ export class MatchesComponent implements OnInit {
     return this.predictions().find(p => p.matchId === matchId);
   }
 
-  loadAllMatchesForLock() {
-    this.api.getMatches().subscribe({
-      next: (res) => {
-        const matches = res.data;
-        matches.forEach(m => {
-          const matchDate = new Date(m.matchDate);
-          const dayString = this.getLocalDayString(matchDate);
-          const currentEarliest = this.allMatchesFirstMatchMap.get(dayString);
-          if (!currentEarliest || matchDate < currentEarliest) {
-            this.allMatchesFirstMatchMap.set(dayString, matchDate);
-          }
-        });
-      }
-    });
-  }
-
-  getLocalDayString(date: Date): string {
-    const d = new Date(date.getTime() - 5 * 60 * 60 * 1000);
-    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
-  }
-
   isMatchLocked(matchDate: string | Date): boolean {
-    const mDate = new Date(matchDate);
-    const dayString = this.getLocalDayString(mDate);
-    const earliestMatch = this.allMatchesFirstMatchMap.get(dayString);
-    const cutoff = earliestMatch ? earliestMatch : mDate;
+    const cutoff = new Date(new Date(matchDate).getTime() - 3 * 60 * 60 * 1000);
     return new Date() >= cutoff;
   }
 

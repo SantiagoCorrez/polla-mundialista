@@ -13,7 +13,10 @@ export class PredictionsService {
       throw new AppError('Cannot predict on a match that has already started or finished', 400);
     }
 
-    await this.checkLock(match);
+    const cutoffTime = new Date(match.matchDate.getTime() - 3 * 60 * 60 * 1000);
+    if (new Date() >= cutoffTime) {
+      throw new AppError('No se pueden hacer predicciones faltando menos de 3 horas para el partido', 400);
+    }
 
     if (predictedHome < 0 || predictedAway < 0) {
       throw new AppError('Scores must be non-negative', 400);
@@ -44,7 +47,10 @@ export class PredictionsService {
       throw new AppError('Cannot edit prediction after the match has started', 400);
     }
 
-    await this.checkLock(match);
+    const cutoffTime = new Date(match.matchDate.getTime() - 3 * 60 * 60 * 1000);
+    if (new Date() >= cutoffTime) {
+      throw new AppError('No se pueden editar predicciones faltando menos de 3 horas para el partido', 400);
+    }
 
     if (predictedHome < 0 || predictedAway < 0) {
       throw new AppError('Scores must be non-negative', 400);
@@ -157,29 +163,5 @@ export class PredictionsService {
       },
       orderBy: { user: { fullName: 'asc' } },
     });
-  }
-
-  private async checkLock(match: any) {
-    const localTzOffset = 5 * 60 * 60 * 1000;
-    const localDate = new Date(match.matchDate.getTime() - localTzOffset);
-    const startOfDayUTC = new Date(Date.UTC(localDate.getUTCFullYear(), localDate.getUTCMonth(), localDate.getUTCDate(), 0, 0, 0));
-    startOfDayUTC.setTime(startOfDayUTC.getTime() + localTzOffset);
-    const endOfDayUTC = new Date(startOfDayUTC.getTime() + 24 * 60 * 60 * 1000 - 1);
-
-    const firstMatchOfDay = await prisma.match.findFirst({
-      where: {
-        matchDate: {
-          gte: startOfDayUTC,
-          lte: endOfDayUTC,
-        }
-      },
-      orderBy: { matchDate: 'asc' }
-    });
-
-    const cutoffTime = firstMatchOfDay ? firstMatchOfDay.matchDate : match.matchDate;
-
-    if (new Date() >= cutoffTime) {
-      throw new AppError('No se pueden hacer o editar predicciones después de que haya comenzado el primer partido del día', 400);
-    }
   }
 }
